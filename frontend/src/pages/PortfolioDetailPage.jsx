@@ -153,7 +153,7 @@ export default function PortfolioDetailPage() {
       {/* Header */}
       <div>
         <button
-          onClick={() => navigate("/portfolios")}
+          onClick={() => navigate("/dashboard/portfolios")}
           className="flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-sm mb-3 transition-colors"
         >
           <ArrowLeft size={14} /> Back to Portfolios

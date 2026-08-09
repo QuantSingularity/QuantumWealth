@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import AppLayout from "./components/layout/AppLayout";
+import HomePage from "./pages/HomePage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -39,16 +40,19 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/" element={<HomePage />} />
       <Route
         path="/login"
-        element={!user ? <LoginPage /> : <Navigate to="/" replace />}
+        element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />}
       />
       <Route
         path="/register"
-        element={!user ? <RegisterPage /> : <Navigate to="/" replace />}
+        element={
+          !user ? <RegisterPage /> : <Navigate to="/dashboard" replace />
+        }
       />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <ProtectedRoute>
             <AppLayout />

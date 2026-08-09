@@ -95,7 +95,7 @@ export default function PortfoliosPage() {
             return (
               <div
                 key={p.id}
-                onClick={() => navigate(`/portfolios/${p.id}`)}
+                onClick={() => navigate(`/dashboard/portfolios/${p.id}`)}
                 className="card-hover p-6 cursor-pointer group relative overflow-hidden"
               >
                 <div className="absolute top-0 right-0 w-32 h-32 rounded-full bg-gold-500/3 -translate-x-8 -translate-y-16 group-hover:bg-gold-500/6 transition-all" />
@@ -195,7 +195,7 @@ export default function PortfoliosPage() {
         onCreated={(p) => {
           setPortfolios((ps) => [...ps, p]);
           setShowCreate(false);
-          navigate(`/portfolios/${p.id}`);
+          navigate(`/dashboard/portfolios/${p.id}`);
         }}
       />
     </div>

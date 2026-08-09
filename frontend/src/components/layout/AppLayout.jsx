@@ -19,13 +19,18 @@ import { useAuth } from "../../hooks/useAuth";
 import { auth } from "../../api/client";
 
 const navItems = [
-  { to: "/", icon: LayoutDashboard, label: "Dashboard", exact: true },
-  { to: "/portfolios", icon: Briefcase, label: "Portfolios" },
-  { to: "/market", icon: TrendingUp, label: "Markets" },
-  { to: "/risk", icon: ShieldCheck, label: "Risk Engine" },
-  { to: "/advisor", icon: Bot, label: "AI Advisor" },
-  { to: "/tax", icon: Receipt, label: "Tax Center" },
-  { to: "/goals", icon: Target, label: "Goals" },
+  {
+    to: "/dashboard",
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    exact: true,
+  },
+  { to: "/dashboard/portfolios", icon: Briefcase, label: "Portfolios" },
+  { to: "/dashboard/market", icon: TrendingUp, label: "Markets" },
+  { to: "/dashboard/risk", icon: ShieldCheck, label: "Risk Engine" },
+  { to: "/dashboard/advisor", icon: Bot, label: "AI Advisor" },
+  { to: "/dashboard/tax", icon: Receipt, label: "Tax Center" },
+  { to: "/dashboard/goals", icon: Target, label: "Goals" },
 ];
 
 export default function AppLayout() {
@@ -160,7 +165,7 @@ export default function AppLayout() {
 
           <div className="mt-6 pt-6 border-t border-obsidian-700/50 space-y-0.5">
             <NavLink
-              to="/settings"
+              to="/dashboard/settings"
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) => `
                 flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium
@@ -225,7 +230,7 @@ export default function AppLayout() {
 
           <div className="flex items-center gap-2 ml-auto">
             <button
-              onClick={() => navigate("/settings")}
+              onClick={() => navigate("/dashboard/settings")}
               className="relative flex items-center justify-center w-9 h-9 rounded-lg
                          bg-obsidian-800 border border-obsidian-600 hover:border-obsidian-500
                          text-slate-400 hover:text-slate-200 transition-all"

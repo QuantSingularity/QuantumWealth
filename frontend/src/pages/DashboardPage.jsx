@@ -144,7 +144,7 @@ export default function DashboardPage() {
         </div>
         <div className="hidden sm:flex items-center gap-2">
           <button
-            onClick={() => navigate("/portfolios")}
+            onClick={() => navigate("/dashboard/portfolios")}
             className="btn-primary flex items-center gap-2"
           >
             <Zap size={15} /> New Portfolio
@@ -245,7 +245,7 @@ export default function DashboardPage() {
               description="Create a portfolio and add holdings to see performance here."
               action={
                 <button
-                  onClick={() => navigate("/portfolios")}
+                  onClick={() => navigate("/dashboard/portfolios")}
                   className="btn-primary text-sm"
                 >
                   Get Started
@@ -272,7 +272,7 @@ export default function DashboardPage() {
                 )}
               </div>
               <button
-                onClick={() => navigate("/settings")}
+                onClick={() => navigate("/dashboard/settings")}
                 className="btn-ghost text-xs"
               >
                 Retake Questionnaire →
@@ -285,7 +285,7 @@ export default function DashboardPage() {
               description="Complete the questionnaire to get personalized advice."
               action={
                 <button
-                  onClick={() => navigate("/settings")}
+                  onClick={() => navigate("/dashboard/settings")}
                   className="btn-primary text-sm"
                 >
                   Take Quiz
@@ -303,7 +303,7 @@ export default function DashboardPage() {
             title="Your Portfolios"
             actions={
               <button
-                onClick={() => navigate("/portfolios")}
+                onClick={() => navigate("/dashboard/portfolios")}
                 className="btn-ghost text-xs flex items-center gap-1"
               >
                 View all <ArrowRight size={12} />
@@ -317,7 +317,7 @@ export default function DashboardPage() {
               description="Create your first portfolio to start tracking your investments."
               action={
                 <button
-                  onClick={() => navigate("/portfolios")}
+                  onClick={() => navigate("/dashboard/portfolios")}
                   className="btn-primary text-sm"
                 >
                   Create Portfolio
@@ -329,7 +329,7 @@ export default function DashboardPage() {
               {portfolios.slice(0, 5).map((p) => (
                 <div
                   key={p.id}
-                  onClick={() => navigate(`/portfolios/${p.id}`)}
+                  onClick={() => navigate(`/dashboard/portfolios/${p.id}`)}
                   className="flex items-center justify-between p-4 rounded-xl bg-obsidian-900 border border-obsidian-700 hover:border-obsidian-500 cursor-pointer transition-all group"
                 >
                   <div className="flex items-center gap-3">

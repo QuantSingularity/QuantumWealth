@@ -43,7 +43,7 @@ export default function RegisterPage() {
     try {
       await auth.register(form);
       await login(form.email, form.password);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       const d = err.data || {};
       if (typeof d === "object" && !d.detail) setFieldErrors(d);

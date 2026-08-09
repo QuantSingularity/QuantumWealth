@@ -4,6 +4,10 @@ AI-Powered Wealth Management and Robo-Advisory Platform
 
 QuantumWealth is a production-grade, fully containerized Django platform combining modern portfolio theory, machine learning, and real-time market data to deliver institutional-grade wealth management to individual investors.
 
+<div align="center">
+  <img src="docs/images/homepage.bmp" alt="QuantumWealth HomePage" width="80%">
+</div>
+
 ---
 
 ## Directory Structure
