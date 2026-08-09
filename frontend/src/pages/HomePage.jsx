@@ -168,10 +168,7 @@ export default function HomePage() {
                   <span>Get Started</span>
                   <ArrowRight size={16} />
                 </Link>
-                <Link
-                  to="/login"
-                  className="btn-secondary px-6 py-3 text-base"
-                >
+                <Link to="/login" className="btn-secondary px-6 py-3 text-base">
                   Sign In
                 </Link>
               </>
@@ -205,8 +202,8 @@ export default function HomePage() {
             A full research desk, built in
           </h2>
           <p className="text-slate-500 text-sm mt-2 max-w-xl mx-auto">
-            Every module runs on the same data pipeline so your allocation,
-            risk and tax views always agree with each other.
+            Every module runs on the same data pipeline so your allocation, risk
+            and tax views always agree with each other.
           </p>
         </div>
 
@@ -274,8 +271,7 @@ export default function HomePage() {
             Ready to optimize your portfolio
           </h2>
           <p className="text-slate-500 text-sm mb-8">
-            Create a free account and connect your first portfolio in
-            minutes.
+            Create a free account and connect your first portfolio in minutes.
           </p>
           <Link
             to="/register"
