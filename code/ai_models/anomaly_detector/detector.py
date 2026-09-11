@@ -76,9 +76,6 @@ class PortfolioAnomalyDetector:
         w /= w.sum()
         port_ret = returns[available].values @ w
 
-        # Feature engineering
-        # FIX: fillna(method=...) was removed in pandas 3.0 (raises TypeError);
-        # .bfill() is the direct modern replacement.
         rolling_vol = pd.Series(port_ret).rolling(21).std().bfill().values
         rolling_mean = pd.Series(port_ret).rolling(21).mean().bfill().values
 
@@ -178,9 +175,6 @@ class PortfolioAnomalyDetector:
         - Round-trip trades (buy + full sell within short window)
         """
         if not transactions:
-            # FIX: keep this return shape consistent with the populated-list
-            # return below; callers indexing anomaly_count/high_severity/etc.
-            # would otherwise raise KeyError on an empty transaction list.
             return {
                 "anomalies": [],
                 "anomaly_count": 0,
@@ -200,9 +194,6 @@ class PortfolioAnomalyDetector:
             mu, sigma = np.mean(amounts), np.std(amounts)
             for txn in transactions:
                 amt = abs(float(txn.get("amount", 0)))
-                # FIX: was strict ">", which silently missed the exact
-                # 3-sigma boundary case described in this method's own
-                # docstring ("Abnormally large single trades (>3 std...)").
                 if sigma > 0 and (amt - mu) / sigma >= 3.0:
                     anomalies.append(
                         {
@@ -315,10 +306,6 @@ class PortfolioAnomalyDetector:
         return {
             "herfindahl_index": round(herfindahl, 4),
             "effective_n": round(1 / herfindahl, 1) if herfindahl > 0 else n,
-            # FIX: for a single-holding portfolio min_hhi == 1, so
-            # (1 - min_hhi) == 0 and the original expression raised
-            # ZeroDivisionError. A single holding has, by definition, zero
-            # diversification, so the score is 0 in that case.
             "diversification_score": (
                 0.0 if n <= 1 else round(1 - (herfindahl - min_hhi) / (1 - min_hhi), 4)
             ),

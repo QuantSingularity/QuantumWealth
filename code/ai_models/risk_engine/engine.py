@@ -124,10 +124,6 @@ class RiskEngine:
         except Exception as e:
             return {"error": str(e)}
 
-        # FIX: _fetch_returns() can return an empty DataFrame (e.g. every
-        # ticker fails to download) without raising. Every downstream
-        # computation on an empty array eventually crashes with a
-        # confusing numpy error instead of a clear one.
         if returns.empty:
             return {"error": "No data available."}
 
@@ -301,9 +297,7 @@ class RiskEngine:
         sortino = (ann_ret - 0.05) / sortino_vol if sortino_vol > 0 else 0.0
 
         cumulative = (1 + port_ret).cumprod()
-        # FIX: port_ret/cumulative are numpy arrays (not pandas Series), and
-        # ndarray has no .cummax() method. np.maximum.accumulate is the
-        # numpy equivalent of a running maximum.
+
         rolling_max = np.maximum.accumulate(cumulative)
         dd_series = (cumulative - rolling_max) / rolling_max
         max_dd = float(dd_series.min())

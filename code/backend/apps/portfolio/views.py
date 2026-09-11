@@ -58,11 +58,6 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        # FIX: PortfolioCreateSerializer intentionally excludes id (and
-        # other read-only fields) to restrict what's settable on creation,
-        # but that means using it for the response too left the id out
-        # entirely - the frontend navigates to /portfolios/{id} right
-        # after creating one, and had nothing to navigate to.
         output = PortfolioSerializer(
             serializer.instance, context=self.get_serializer_context()
         )
@@ -74,12 +69,6 @@ class PortfolioViewSet(viewsets.ModelViewSet):
         portfolio.is_active = False
         portfolio.save(update_fields=["is_active"])
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # ------------------------------------------------------------------
-    # FIX: combine GET + POST for the same url_path into ONE action each.
-    # Two @action decorators with the same url_path cause DRF to register
-    # only one, leaving the other method returning 405 Method Not Allowed.
-    # ------------------------------------------------------------------
 
     @extend_schema(
         methods=["GET"],

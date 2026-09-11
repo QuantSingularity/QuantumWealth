@@ -10,10 +10,6 @@ REQUIRED_MAJOR=3
 REQUIRED_MINOR=12
 echo "Python version: $PYTHON_VERSION"
 
-# FIX: REQUIRED_MAJOR/REQUIRED_MINOR were declared above but never
-# actually compared against anything, so this check did nothing - the
-# script proceeded silently on any Python version, including ones too old
-# for this project, only to fail later with a more confusing error.
 PY_MAJOR=$(echo "$PYTHON_VERSION" | cut -d. -f1)
 PY_MINOR=$(echo "$PYTHON_VERSION" | cut -d. -f2)
 if [ "$PY_MAJOR" -lt "$REQUIRED_MAJOR" ] || { [ "$PY_MAJOR" -eq "$REQUIRED_MAJOR" ] && [ "$PY_MINOR" -lt "$REQUIRED_MINOR" ]; }; then

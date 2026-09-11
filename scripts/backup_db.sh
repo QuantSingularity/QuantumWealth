@@ -2,17 +2,9 @@
 # backup_db.sh -- Dump PostgreSQL database from running Docker container
 set -euo pipefail
 
-# FIX: `docker compose` only looks for docker-compose.yml in the current
-# working directory, so this script previously failed with "no
-# configuration file provided: not found" whenever it was run from
-# anywhere other than the repo root (e.g. `cd scripts && ./backup_db.sh`).
-# Always operate from the repo root, regardless of the caller's CWD.
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$REPO_ROOT"
 
-# FIX: pick up the actually-configured DB_USER/DB_NAME from .env instead
-# of silently falling back to the published defaults, which only work if
-# the user never customized their database credentials.
 if [ -f "code/backend/.env" ]; then
   set -a
   # shellcheck disable=SC1091

@@ -303,16 +303,7 @@ ADMIN_INDEX_TITLE = "Platform Management"
 FRONTEND_URL = config("FRONTEND_URL", default="http://localhost:3000")
 
 # ─── AI Models Path ───────────────────────────────────────────────────────────
-# `ai_models` lives as a sibling of code/backend/ in local development, but is
-# bind-mounted directly inside the app directory (BASE_DIR/ai_models) in the
-# Docker Compose deployment (see docker-compose.yml). Check both layouts and
-# add whichever one actually contains the package.
-#
-# FIX: this previously used BASE_DIR.parent.parent, which goes one directory
-# too high in the local-dev layout (lands on the repository root instead of
-# code/) and resolves to the filesystem root in the Docker layout, so
-# `import ai_models` failed outside of the test settings module (which has
-# its own, correct, override).
+
 import sys as _sys
 
 for _ai_models_candidate in (BASE_DIR, BASE_DIR.parent):

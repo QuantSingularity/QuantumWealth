@@ -58,8 +58,7 @@ class PortfolioService:
     @db_transaction.atomic
     def record_transaction(portfolio, data: dict) -> Transaction:
         """Record a transaction and update portfolio state accordingly."""
-        # FIX: cast to plain str so comparisons work in all Python versions
-        # (Python 3.11+ changed TextChoices equality semantics)
+
         txn_type = str(data["transaction_type"])
         ticker = data.get("ticker", "") or ""
         ticker = ticker.upper()
@@ -92,8 +91,6 @@ class PortfolioService:
         elif txn_type == "buy" and ticker and quantity and price:
             total_cost = quantity * price + fees
             portfolio.cash_balance -= total_cost
-            # FIX: explicitly save cash_balance BEFORE calling upsert_holding.
-            # recalculate_portfolio only saves total_value, not cash_balance.
             portfolio.save(update_fields=["cash_balance", "updated_at"])
             PortfolioService.upsert_holding(portfolio, ticker, quantity, price)
 
