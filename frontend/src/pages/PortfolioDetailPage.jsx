@@ -399,7 +399,7 @@ export default function PortfolioDetailPage() {
                     <span
                       className={`font-medium w-16 text-right ${a.suggested_action === "BUY" ? "text-jade-500" : a.suggested_action === "SELL" ? "text-crimson-400" : "text-slate-500"}`}
                     >
-                      {a.suggested_action || "—"}
+                      {a.suggested_action || "-"}
                     </span>
                   </div>
                 ))}
@@ -465,7 +465,7 @@ export default function PortfolioDetailPage() {
                         </td>
                         <td>
                           <span className="text-slate-300">
-                            {h.name || "—"}
+                            {h.name || "-"}
                           </span>
                         </td>
                         <td>
@@ -480,14 +480,14 @@ export default function PortfolioDetailPage() {
                           ${parseFloat(h.average_cost).toFixed(2)}
                         </td>
                         <td className="text-right font-mono">
-                          {mv > 0 ? `$${mv.toLocaleString()}` : "—"}
+                          {mv > 0 ? `$${mv.toLocaleString()}` : "-"}
                         </td>
                         <td
                           className={`text-right font-mono font-medium ${pnl >= 0 ? "text-jade-500" : "text-crimson-400"}`}
                         >
                           {mv > 0
                             ? `${pnl >= 0 ? "+" : ""}$${pnl.toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                            : "—"}
+                            : "-"}
                         </td>
                       </tr>
                     );
@@ -540,20 +540,20 @@ export default function PortfolioDetailPage() {
                       </td>
                       <td>
                         <span className="font-mono font-semibold text-gold-400">
-                          {tx.ticker || "—"}
+                          {tx.ticker || "-"}
                         </span>
                       </td>
                       <td className="text-right font-mono">
                         ${parseFloat(tx.amount || 0).toLocaleString()}
                       </td>
                       <td className="text-right font-mono">
-                        {tx.quantity ? parseFloat(tx.quantity).toFixed(4) : "—"}
+                        {tx.quantity ? parseFloat(tx.quantity).toFixed(4) : "-"}
                       </td>
                       <td className="text-right font-mono">
-                        {tx.price ? `$${parseFloat(tx.price).toFixed(2)}` : "—"}
+                        {tx.price ? `$${parseFloat(tx.price).toFixed(2)}` : "-"}
                       </td>
                       <td className="text-xs text-slate-500 max-w-xs truncate">
-                        {tx.notes || "—"}
+                        {tx.notes || "-"}
                       </td>
                     </tr>
                   ))}

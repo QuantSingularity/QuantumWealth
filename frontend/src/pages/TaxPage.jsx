@@ -198,7 +198,7 @@ export default function TaxPage() {
                               {h.ticker}
                             </span>
                           </td>
-                          <td className="text-slate-300">{h.name || "—"}</td>
+                          <td className="text-slate-300">{h.name || "-"}</td>
                           <td className="text-right font-mono text-crimson-400">
                             -$
                             {Math.abs(
@@ -206,13 +206,13 @@ export default function TaxPage() {
                             ).toLocaleString()}
                           </td>
                           <td className="text-right font-mono">
-                            {h.shares || h.quantity || "—"}
+                            {h.shares || h.quantity || "-"}
                           </td>
                           <td className="font-mono text-jade-500">
-                            {(h.wash_sale_substitutes || []).join(", ") || "—"}
+                            {(h.wash_sale_substitutes || []).join(", ") || "-"}
                           </td>
                           <td className="text-xs text-slate-500 max-w-xs truncate">
-                            {h.notes || h.reason || "—"}
+                            {h.notes || h.reason || "-"}
                           </td>
                         </tr>
                       ))}
@@ -289,7 +289,7 @@ export default function TaxPage() {
                             <td className="text-xs text-slate-500">
                               {tx.holding_period_days
                                 ? `${tx.holding_period_days}d`
-                                : "—"}
+                                : "-"}
                             </td>
                           </tr>
                         );
@@ -325,7 +325,7 @@ export default function TaxPage() {
                             {rec.ticker}
                           </span>
                           <span className="badge-slate">
-                            {(rec.asset_class || "").replace("_", " ") || "—"}
+                            {(rec.asset_class || "").replace("_", " ") || "-"}
                           </span>
                           {rec.recommended_account && (
                             <>
@@ -337,7 +337,7 @@ export default function TaxPage() {
                           )}
                         </div>
                         <p className="text-xs text-slate-400">
-                          {rec.rationale || "—"}
+                          {rec.rationale || "-"}
                         </p>
                         {rec.annual_tax_drag_est != null && (
                           <p className="text-xs text-gold-400 mt-1 font-medium">

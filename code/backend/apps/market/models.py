@@ -1,4 +1,4 @@
-"""Market app — models for cached quotes and watchlists."""
+"""Market app - models for cached quotes and watchlists."""
 
 import uuid
 
@@ -7,7 +7,7 @@ from django.db import models
 
 
 class MarketQuoteCache(models.Model):
-    """Cached market quote — refreshed by Celery task."""
+    """Cached market quote - refreshed by Celery task."""
 
     ticker = models.CharField(max_length=20, primary_key=True)
     name = models.CharField(max_length=255, blank=True)

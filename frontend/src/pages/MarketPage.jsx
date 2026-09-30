@@ -308,47 +308,47 @@ export default function MarketPage() {
                   "Day High",
                   histData.length > 0
                     ? `$${histData[histData.length - 1].high.toFixed(2)}`
-                    : "—",
+                    : "-",
                 ],
                 [
                   "Day Low",
                   histData.length > 0
                     ? `$${histData[histData.length - 1].low.toFixed(2)}`
-                    : "—",
+                    : "-",
                 ],
                 [
                   "52w High",
                   quoteData["52w_high"]
                     ? `$${parseFloat(quoteData["52w_high"]).toFixed(2)}`
-                    : "—",
+                    : "-",
                 ],
                 [
                   "52w Low",
                   quoteData["52w_low"]
                     ? `$${parseFloat(quoteData["52w_low"]).toFixed(2)}`
-                    : "—",
+                    : "-",
                 ],
                 [
                   "Volume",
                   quoteData.volume
                     ? Number(quoteData.volume).toLocaleString()
-                    : "—",
+                    : "-",
                 ],
                 [
                   "Market Cap",
                   quoteData.market_cap
                     ? `$${(quoteData.market_cap / 1e9).toFixed(2)}B`
-                    : "—",
+                    : "-",
                 ],
                 [
                   "P/E Ratio",
                   quoteData.pe_ratio
                     ? parseFloat(quoteData.pe_ratio).toFixed(2)
-                    : "—",
+                    : "-",
                 ],
                 [
                   "Beta",
-                  quoteData.beta ? parseFloat(quoteData.beta).toFixed(3) : "—",
+                  quoteData.beta ? parseFloat(quoteData.beta).toFixed(3) : "-",
                 ],
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between text-xs">
@@ -380,7 +380,7 @@ export default function MarketPage() {
         <div className="card p-6 border-jade-500/20">
           <SectionHeader
             title="AI Price Prediction"
-            subtitle={`${ticker} — 30-day horizon`}
+            subtitle={`${ticker} - 30-day horizon`}
             actions={
               <button
                 onClick={() => setPrediction(null)}
@@ -407,7 +407,7 @@ export default function MarketPage() {
               },
               {
                 label: "Market Regime",
-                value: prediction.regime?.regime || "—",
+                value: prediction.regime?.regime || "-",
                 accent: "slate",
               },
             ].map((m) => (

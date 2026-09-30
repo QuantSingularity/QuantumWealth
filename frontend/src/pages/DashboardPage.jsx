@@ -169,14 +169,14 @@ export default function DashboardPage() {
         />
         <StatCard
           label="Risk Score"
-          value={riskScore ?? "—"}
+          value={riskScore ?? "-"}
           suffix={riskScore ? "/100" : ""}
           icon={AlertTriangle}
           accent={riskScore > 60 ? "crimson" : "gold"}
         />
         <StatCard
           label="Goals Tracked"
-          value="—"
+          value="-"
           icon={Target}
           accent="slate"
         />
@@ -189,7 +189,7 @@ export default function DashboardPage() {
             title="Portfolio Performance"
             subtitle={
               firstPortfolio
-                ? `${firstPortfolio.name} — Last 90 days`
+                ? `${firstPortfolio.name} - Last 90 days`
                 : "No portfolios yet"
             }
           />

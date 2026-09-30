@@ -394,7 +394,7 @@ export default function AdvisorPage() {
                                   ).toLocaleString()}
                                 </td>
                                 <td className="text-xs text-slate-500">
-                                  {t.reason || "—"}
+                                  {t.reason || "-"}
                                 </td>
                               </tr>
                             ),
@@ -440,14 +440,14 @@ export default function AdvisorPage() {
                   ? goalPlan.gap_analysis.on_track
                     ? "On Track"
                     : "Behind Pace"
-                  : "—",
+                  : "-",
                 accent: goalPlan.gap_analysis?.on_track ? "jade" : "crimson",
               },
               {
                 label: "Projected Value",
                 value: goalPlan.projected_value
                   ? `$${parseFloat(goalPlan.projected_value).toLocaleString()}`
-                  : "—",
+                  : "-",
                 accent: "gold",
               },
               {
@@ -455,7 +455,7 @@ export default function AdvisorPage() {
                 value:
                   goalPlan.probability_of_success != null
                     ? `${(goalPlan.probability_of_success * 100).toFixed(0)}%`
-                    : "—",
+                    : "-",
                 accent: "jade",
               },
             ].map((m) => (

@@ -1,5 +1,5 @@
 """
-QuantumWealth AI Engine — Robo Advisor
+QuantumWealth AI Engine - Robo Advisor
 Goal-based financial planning, rebalancing engine, allocation recommendations.
 """
 

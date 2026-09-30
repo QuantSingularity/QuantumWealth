@@ -223,7 +223,7 @@ MIGRATION_MODULES = {
     "sessions": "django.contrib.sessions.migrations",
     # SimpleJWT blacklist (has its own migrations bundled with the package)
     "token_blacklist": "rest_framework_simplejwt.token_blacklist.migrations",
-    # Local apps — no migration files yet, create tables from models directly
+    # Local apps - no migration files yet, create tables from models directly
     "accounts": None,
     "portfolio": None,
     "market": None,

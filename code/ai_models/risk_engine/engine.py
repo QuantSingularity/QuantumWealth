@@ -1,5 +1,5 @@
 """
-QuantumWealth AI Engine — Risk Engine
+QuantumWealth AI Engine - Risk Engine
 Implements: VaR (Historical & Parametric), CVaR, Monte Carlo GBM,
 Stress Testing, Max Drawdown, Sharpe/Sortino/Calmar, Correlation Matrix.
 """

@@ -1,5 +1,5 @@
 """
-QuantumWealth — Django Base Settings
+QuantumWealth - Django Base Settings
 """
 
 from pathlib import Path

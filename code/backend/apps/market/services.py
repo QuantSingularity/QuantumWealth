@@ -1,4 +1,4 @@
-"""Market service — yfinance-based quotes with Redis caching."""
+"""Market service - yfinance-based quotes with Redis caching."""
 
 import logging
 

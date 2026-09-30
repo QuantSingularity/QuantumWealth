@@ -1,5 +1,5 @@
 """
-QuantumWealth — Portfolio Models
+QuantumWealth - Portfolio Models
 Portfolio, Holding, Transaction, FinancialGoal, PortfolioSnapshot.
 """
 
@@ -206,7 +206,7 @@ class FinancialGoal(models.Model):
         ordering = ["priority", "target_date"]
 
     def __str__(self):
-        return f"{self.name} — {self.user.email}"
+        return f"{self.name} - {self.user.email}"
 
     @property
     def progress_pct(self):

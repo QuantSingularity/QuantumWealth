@@ -1,5 +1,5 @@
 """
-Tax Optimizer Service — tax-loss harvesting, gain/loss reporting, asset location.
+Tax Optimizer Service - tax-loss harvesting, gain/loss reporting, asset location.
 Fully implemented with real holding-period tracking from transaction history.
 """
 
@@ -35,24 +35,24 @@ LOCATION_RULES = {
     ),
     "fixed_income": (
         "tax_advantaged",
-        "Interest income taxed as ordinary income — shelter in IRA/401k.",
+        "Interest income taxed as ordinary income - shelter in IRA/401k.",
     ),
     "real_estate": (
         "tax_advantaged",
-        "REIT dividends fully taxable as ordinary income — shelter in IRA/401k.",
+        "REIT dividends fully taxable as ordinary income - shelter in IRA/401k.",
     ),
     "commodity": (
         "taxable",
-        "Low yield and capital-gains-driven — suitable for taxable accounts.",
+        "Low yield and capital-gains-driven - suitable for taxable accounts.",
     ),
     "crypto": (
         "tax_advantaged",
-        "High volatility creates large taxable events — defer in Roth IRA if possible.",
+        "High volatility creates large taxable events - defer in Roth IRA if possible.",
     ),
     "cash": ("taxable", "Minimal tax impact; fine in taxable accounts."),
     "alternative": (
         "tax_advantaged",
-        "Complex tax treatment — prefer sheltered accounts.",
+        "Complex tax treatment - prefer sheltered accounts.",
     ),
 }
 

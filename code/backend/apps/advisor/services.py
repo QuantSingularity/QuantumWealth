@@ -1,4 +1,4 @@
-"""Advisor service — goal planning, rebalancing, recommendations."""
+"""Advisor service - goal planning, rebalancing, recommendations."""
 
 import logging
 from datetime import date, datetime, timezone

@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-obsidian-950 flex">
-      {/* Left — branding */}
+      {/* Left - branding */}
       <div className="hidden lg:flex flex-1 flex-col justify-between p-12 bg-gradient-to-br from-obsidian-950 via-obsidian-900 to-obsidian-800 border-r border-obsidian-700 relative overflow-hidden">
         {/* Decorative grid */}
         <div
@@ -72,7 +72,7 @@ export default function LoginPage() {
           </h2>
           <p className="text-slate-500 text-base leading-relaxed max-w-sm">
             AI-powered portfolio optimization, real-time risk analytics, and
-            automated tax-loss harvesting — all in one platform.
+            automated tax-loss harvesting - all in one platform.
           </p>
 
           <div className="grid grid-cols-3 gap-4 pt-4">
@@ -102,7 +102,7 @@ export default function LoginPage() {
         </p>
       </div>
 
-      {/* Right — form */}
+      {/* Right - form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md animate-slide-up">
           {/* Mobile logo */}

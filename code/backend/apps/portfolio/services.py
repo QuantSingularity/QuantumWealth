@@ -1,4 +1,4 @@
-"""Portfolio service — CRUD, optimization, performance, snapshots."""
+"""Portfolio service - CRUD, optimization, performance, snapshots."""
 
 import logging
 from decimal import Decimal
@@ -232,7 +232,7 @@ class PortfolioService:
 
     @staticmethod
     def take_snapshot(portfolio: Portfolio):
-        """Record a daily portfolio value snapshot (idempotent — upserts by date)."""
+        """Record a daily portfolio value snapshot (idempotent - upserts by date)."""
         today = timezone.localdate()
         yesterday = (
             PortfolioSnapshot.objects.filter(portfolio=portfolio)

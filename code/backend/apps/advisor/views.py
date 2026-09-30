@@ -1,4 +1,4 @@
-"""Advisor views — goal planning, rebalancing, recommendations, drift analysis."""
+"""Advisor views - goal planning, rebalancing, recommendations, drift analysis."""
 
 import logging
 

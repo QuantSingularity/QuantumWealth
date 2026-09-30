@@ -1,5 +1,5 @@
 """
-Root conftest.py — MUST live at code/backend/conftest.py (same dir as pytest.ini).
+Root conftest.py - MUST live at code/backend/conftest.py (same dir as pytest.ini).
 
 Calls django.setup() at import time so Django is fully initialized before
 pytest collects any test module.  This approach works whether or not
@@ -13,7 +13,7 @@ import django
 # Set the settings module before anything else touches Django
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "quantumwealth.settings.test")
 
-# Initialize Django — this must happen before any import of:
+# Initialize Django - this must happen before any import of:
 #   - django.contrib.*
 #   - rest_framework.*
 #   - apps.*

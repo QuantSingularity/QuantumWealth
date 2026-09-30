@@ -1,4 +1,4 @@
-"""Development settings — debug mode, relaxed security."""
+"""Development settings - debug mode, relaxed security."""
 
 from .base import *  # noqa
 

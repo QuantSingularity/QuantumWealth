@@ -272,7 +272,7 @@ export default function GoalsPage() {
                           ? new Date(
                               selectedGoal.target_date,
                             ).toLocaleDateString()
-                          : "—",
+                          : "-",
                         icon: Calendar,
                       },
                     ].map((m) => (
@@ -327,7 +327,7 @@ export default function GoalsPage() {
                             ? goalPlan.gap_analysis.on_track
                               ? "on track"
                               : "behind pace"
-                            : "—",
+                            : "-",
                           accent: goalPlan.gap_analysis?.on_track
                             ? "jade"
                             : "crimson",
@@ -336,7 +336,7 @@ export default function GoalsPage() {
                           label: "Projected Value",
                           value: goalPlan.projected_value
                             ? `$${parseFloat(goalPlan.projected_value).toLocaleString(undefined, { maximumFractionDigits: 0 })}`
-                            : "—",
+                            : "-",
                           accent: "gold",
                         },
                         {
@@ -344,7 +344,7 @@ export default function GoalsPage() {
                           value:
                             goalPlan.probability_of_success != null
                               ? `${(goalPlan.probability_of_success * 100).toFixed(0)}%`
-                              : "—",
+                              : "-",
                           accent: "jade",
                         },
                       ].map((m) => (

@@ -1,5 +1,5 @@
 """
-QuantumWealth AI Engine — Market Predictor
+QuantumWealth AI Engine - Market Predictor
 LSTM-style price forecasting (GBM simulation as placeholder for trained model)
 and Hidden Markov Model-inspired regime detection.
 """

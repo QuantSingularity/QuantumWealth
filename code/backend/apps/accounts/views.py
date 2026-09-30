@@ -1,4 +1,4 @@
-"""Accounts views — registration, auth, profile, risk questionnaire, notifications."""
+"""Accounts views - registration, auth, profile, risk questionnaire, notifications."""
 
 import logging
 import uuid
@@ -83,7 +83,7 @@ class RegisterView(generics.CreateAPIView):
 
 @extend_schema(tags=["auth"])
 class LoginView(TokenObtainPairView):
-    """Login — returns JWT access + refresh tokens with user data."""
+    """Login - returns JWT access + refresh tokens with user data."""
 
     serializer_class = CustomTokenObtainPairSerializer
 

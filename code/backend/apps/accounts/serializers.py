@@ -1,4 +1,4 @@
-"""Accounts serializers — registration, login, profile, notifications."""
+"""Accounts serializers - registration, login, profile, notifications."""
 
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone

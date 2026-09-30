@@ -1,5 +1,5 @@
 """
-QuantumWealth — Accounts Models
+QuantumWealth - Accounts Models
 Custom User model with risk profiling and financial profile.
 """
 
@@ -134,7 +134,7 @@ class PriceAlert(models.Model):
         ordering = ["-created_at"]
 
     def __str__(self):
-        return f"{self.user.email} — {self.ticker} {self.alert_type} {self.threshold}"
+        return f"{self.user.email} - {self.ticker} {self.alert_type} {self.threshold}"
 
 
 class Notification(models.Model):

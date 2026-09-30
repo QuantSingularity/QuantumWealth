@@ -169,7 +169,7 @@ export default function RiskPage() {
                   label: "VaR 95% (1-day)",
                   value: rm.var_95_dollar
                     ? `-$${Math.abs(rm.var_95_dollar).toLocaleString()}`
-                    : "—",
+                    : "-",
                   pos: false,
                 },
               ].map((m) => (
@@ -242,7 +242,7 @@ export default function RiskPage() {
                   value={
                     rm.var_95_dollar
                       ? `-$${Math.abs(rm.var_95_dollar).toLocaleString()}`
-                      : "—"
+                      : "-"
                   }
                 />
                 <MetricRow
@@ -250,14 +250,14 @@ export default function RiskPage() {
                   value={
                     rm.cvar_95_dollar
                       ? `-$${Math.abs(rm.cvar_95_dollar).toLocaleString()}`
-                      : "—"
+                      : "-"
                   }
                   highlight
                 />
                 <MetricRow
                   label="VaR 95% (%)"
                   value={
-                    rm.var_95_pct != null ? `${rm.var_95_pct.toFixed(2)}%` : "—"
+                    rm.var_95_pct != null ? `${rm.var_95_pct.toFixed(2)}%` : "-"
                   }
                 />
                 <MetricRow
@@ -265,7 +265,7 @@ export default function RiskPage() {
                   value={
                     rm.cvar_95_pct != null
                       ? `${rm.cvar_95_pct.toFixed(2)}%`
-                      : "—"
+                      : "-"
                   }
                 />
                 {report.stress_tests &&
@@ -526,7 +526,7 @@ export default function RiskPage() {
                         value:
                           stressResult.total_impact_pct != null
                             ? `${stressResult.total_impact_pct >= 0 ? "+" : ""}${stressResult.total_impact_pct.toFixed(2)}%`
-                            : "—",
+                            : "-",
                         negative: (stressResult.total_impact_pct ?? 0) < 0,
                       },
                       {
@@ -534,7 +534,7 @@ export default function RiskPage() {
                         value:
                           stressResult.total_impact_dollar != null
                             ? `${stressResult.total_impact_dollar >= 0 ? "+" : "-"}$${Math.abs(stressResult.total_impact_dollar).toLocaleString()}`
-                            : "—",
+                            : "-",
                         negative: (stressResult.total_impact_dollar ?? 0) < 0,
                       },
                       {
@@ -542,7 +542,7 @@ export default function RiskPage() {
                         value:
                           stressResult.stressed_value != null
                             ? `$${stressResult.stressed_value.toLocaleString()}`
-                            : "—",
+                            : "-",
                         negative: false,
                       },
                     ].map((m) => (

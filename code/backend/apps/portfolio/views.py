@@ -1,4 +1,4 @@
-"""Portfolio views — CRUD, optimization, performance, goals, snapshots."""
+"""Portfolio views - CRUD, optimization, performance, goals, snapshots."""
 
 import logging
 

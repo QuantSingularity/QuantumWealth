@@ -1,1 +1,1 @@
-# placeholder — no DB models needed for stateless AI endpoints
+# placeholder - no DB models needed for stateless AI endpoints

@@ -1,4 +1,4 @@
-"""Production settings — hardened security, real email, etc."""
+"""Production settings - hardened security, real email, etc."""
 
 from .base import *  # noqa
 
@@ -23,5 +23,5 @@ EMAIL_BACKEND = config(
     "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
 
-# ─── Logging — JSON format in production ──────────────────────────────────────
+# ─── Logging - JSON format in production ──────────────────────────────────────
 LOGGING["handlers"]["console"]["formatter"] = "json"
