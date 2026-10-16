@@ -1,5 +1,9 @@
 FROM python:3.12-slim
 
+# Build context is code/ (not code/backend/): the Django project imports the
+# sibling `ai_models` package, so both directories must be copied into the image.
+#   docker build -f backend/Dockerfile code
+
 # System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -11,12 +15,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # Python deps
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir -r requirements.txt
 
-# Copy application
-COPY . .
+# Copy application. settings/base.py adds /app to sys.path when /app/ai_models
+# exists, which is what makes `import ai_models` work at runtime.
+COPY backend/ .
+COPY ai_models ./ai_models
 
 # Pre-create the directories that get mounted as named volumes
 # (staticfiles, media) so Docker copies their ownership into the volume on

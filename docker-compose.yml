@@ -36,8 +36,8 @@ services:
 
   backend:
     build:
-      context: ./code/backend
-      dockerfile: Dockerfile
+      context: ./code
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     command: >
       sh -c "python manage.py migrate --noinput &&
@@ -75,8 +75,8 @@ services:
 
   celery_worker:
     build:
-      context: ./code/backend
-      dockerfile: Dockerfile
+      context: ./code
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     command: celery -A quantumwealth worker --loglevel=info --concurrency=4
     volumes:
@@ -95,8 +95,8 @@ services:
 
   celery_beat:
     build:
-      context: ./code/backend
-      dockerfile: Dockerfile
+      context: ./code
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     command: celery -A quantumwealth beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
