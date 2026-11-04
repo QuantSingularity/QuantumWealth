@@ -26,6 +26,7 @@ media/
 # Node
 node_modules/
 frontend/dist/
+frontend/coverage/
 frontend/build/
 
 # Testing

@@ -28,7 +28,7 @@ QuantumWealth is a robo-advisory platform: a Django backend for accounts, adviso
 
 ## Overview
 
-QuantumWealth demonstrates a robo-advisory workflow across a real, runnable codebase. All 9 AI modules are genuinely implemented, not aspirational: real cvxpy-based Black-Litterman and Hierarchical Risk Parity optimization, real Monte Carlo GBM simulation for VaR, and real VADER sentiment scoring with an honest fallback if the library isn't installed, and six of them are genuinely imported and called by the Django backend. CI currently only runs the backend's own 192 tests; the AI modules' separate 154-test suite isn't wired into the workflow.
+QuantumWealth demonstrates a robo-advisory workflow across a real, runnable codebase. All 9 AI modules are genuinely implemented, not aspirational: real cvxpy-based Black-Litterman and Hierarchical Risk Parity optimization, real Monte Carlo GBM simulation for VaR, and real VADER sentiment scoring with an honest fallback if the library isn't installed, and six of them are genuinely imported and called by the Django backend. CI runs the backend's 192 tests, the AI modules' separate 154-test suite, and the frontend's 126 Vitest tests.
 
 ## Project Structure
 
@@ -51,7 +51,7 @@ QuantumWealth/
 │       ├── backtester/             # Event-driven simulation with transaction
 │       │                           # costs and benchmark comparison
 │       ├── anomaly_detector/       # Isolation Forest, z-score outliers
-│       └── tests/                  # AI modules' own test suite (not run in CI)
+│       └── tests/                  # AI modules' own test suite (run in CI)
 ├── frontend/                       # React (Vite) web dashboard
 ├── infrastructure/                 # Nginx config, PostgreSQL init
 ├── scripts/                        # setup.sh, backup_db.sh
@@ -80,27 +80,21 @@ QuantumWealth/
 | **Anomaly detector**       | Isolation Forest, z-score outlier detection, and wash-sale clustering.                                                                                                 |
 | **Web dashboard**          | React app (Vite, plain JavaScript) with Tailwind CSS and Recharts, backed by Celery worker and beat containers for background and scheduled tasks.                     |
 
-### Not currently exercised in CI
-
-| Component                  | Details                                                                                                                                                                                                                                                                                 |
-| :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **AI modules' test suite** | `code/ai_models/tests` has its own 154-function pytest suite covering the risk engine, market predictor, portfolio optimizer, robo advisor, and other modules, but CI's `backend_tests` job only runs `pytest tests/` from `code/backend`, so this suite isn't exercised automatically. |
-
 ## Technology Stack
 
-| Area                 | Technology                                                                                  |
-| :------------------- | :------------------------------------------------------------------------------------------ |
-| Backend              | Django, Django REST Framework                                                               |
-| Data layer           | PostgreSQL, Redis (cache and Celery broker)                                                 |
-| Background tasks     | Celery (worker and beat, both containerized)                                                |
-| Quant / optimization | cvxpy (Black-Litterman, HRP, mean-variance, risk parity), SciPy, NumPy, pandas              |
-| Market data          | yfinance                                                                                    |
-| Sentiment            | VADER (vaderSentiment), with a neutral-score fallback if not installed                      |
-| Anomaly detection    | scikit-learn (Isolation Forest)                                                             |
-| Web frontend         | React 18, Vite, Tailwind CSS, Recharts                                                      |
-| Infrastructure       | Docker, Docker Compose, Nginx                                                               |
-| CI/CD                | GitHub Actions                                                                              |
-| Testing              | pytest (backend, 192 tests, run in CI; the AI modules' 154 tests run locally but not in CI) |
+| Area                 | Technology                                                                                                          |
+| :------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| Backend              | Django, Django REST Framework                                                                                       |
+| Data layer           | PostgreSQL, Redis (cache and Celery broker)                                                                         |
+| Background tasks     | Celery (worker and beat, both containerized)                                                                        |
+| Quant / optimization | cvxpy (Black-Litterman, HRP, mean-variance, risk parity), SciPy, NumPy, pandas                                      |
+| Market data          | yfinance                                                                                                            |
+| Sentiment            | VADER (vaderSentiment), with a neutral-score fallback if not installed                                              |
+| Anomaly detection    | scikit-learn (Isolation Forest)                                                                                     |
+| Web frontend         | React 18, Vite, Tailwind CSS, Recharts                                                                              |
+| Infrastructure       | Docker, Docker Compose, Nginx                                                                                       |
+| CI/CD                | GitHub Actions                                                                                                      |
+| Testing              | pytest (backend, 192 tests; AI modules, 154 tests); Vitest and Testing Library (frontend, 126 tests); all run in CI |
 
 ## Architecture
 
@@ -175,24 +169,51 @@ pytest
 
 # AI modules (from code/ai_models)
 pytest
+
+# Frontend (from frontend)
+npm test
 ```
 
-| Suite            | Test count | Run in CI             |
-| :--------------- | :--------- | :-------------------- |
-| `code/backend`   | 192        | Yes                   |
-| `code/ai_models` | 154        | No, runs locally only |
+| Suite            | Test count | Run in CI |
+| :--------------- | :--------- | :-------- |
+| `code/backend`   | 192        | Yes       |
+| `code/ai_models` | 154        | Yes       |
+| `frontend`       | 126        | Yes       |
 
 See [docs/testing.md](docs/testing.md) for what each suite covers.
 
+### Frontend tests
+
+The dashboard has its own Vitest suite of 126 tests across 7 files, run with `npm test` from the `frontend` directory (`npm run test:coverage` adds a coverage report):
+
+| Test file                                              | Test count |
+| :----------------------------------------------------- | :--------- |
+| `src/api/client.test.js` (REST client, token refresh)  | 28         |
+| `src/components/ui/index.test.jsx` (shared components) | 37         |
+| `src/components/layout/AppLayout.test.jsx` (app shell) | 10         |
+| `src/hooks/useAuth.test.jsx` (session handling)        | 10         |
+| `src/pages/LoginPage.test.jsx` (sign in form)          | 8          |
+| `src/pages/RegisterPage.test.jsx` (registration form)  | 11         |
+| `src/App.test.jsx` (routing and redirects)             | 22         |
+
+Three of those tests are marked as expected failures (`it.fails`) because they record known defects. They fail the run as soon as the defect is fixed, which is the cue to turn them back into normal tests:
+
+| Defect                                                                                                                                               | Where               |
+| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ |
+| An error response that is not JSON (for example an HTML 502 page from a proxy) rejects with a `SyntaxError` instead of an error carrying the status. | `src/api/client.js` |
+| A server error about the email or name arrives while the user is on step 2 of registration, where nothing renders it, so the submit fails silently.  | `RegisterPage.jsx`  |
+| A failure without error details (a network failure, for example) never reaches the generic "Registration failed." message, so nothing is shown.      | `RegisterPage.jsx`  |
+
 ## CI/CD Pipeline
 
-GitHub Actions (`.github/workflows/cicd.yml`) runs three jobs on push, pull request, and manual dispatch:
+GitHub Actions (`.github/workflows/cicd.yml`) runs four jobs on push to `main` or `develop`, on pull requests to those branches, and on manual dispatch:
 
-| Job                 | Depends on          | What it does                                                                                                                            |
-| :------------------ | :------------------ | :-------------------------------------------------------------------------------------------------------------------------------------- |
-| Code Quality Checks | -                   | Formatter checks across the repository                                                                                                  |
-| Backend Tests       | Code Quality Checks | Runs `pytest tests/` from `code/backend` with coverage, and uploads the report as an artifact. Does not run the AI modules' test suite. |
-| Frontend Build      | Code Quality Checks | Installs dependencies and produces the production web build (no test step)                                                              |
+| Job                         | Depends on          | What it does                                                                                                                                                                  |
+| :-------------------------- | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code Quality Checks         | -                   | Formatter checks across the repository (Python and Prettier).                                                                                                                 |
+| Backend Test & Build        | Code Quality Checks | Runs `pytest tests/` from `code/backend` with coverage (uploaded as an artifact), then builds the backend Docker image, checks it runs as a non-root user and smoke tests it. |
+| AI Models Test & Validation | Code Quality Checks | Byte-compiles the AI modules, checks that every sub-package imports cleanly, then runs their pytest suite with coverage (uploaded as an artifact).                            |
+| Frontend Test & Build       | Code Quality Checks | Installs dependencies, lints, runs the Vitest suite with coverage (uploaded as an artifact), then produces the production web build and uploads the bundle.                   |
 
 ## Documentation
 
