@@ -9,6 +9,13 @@
 #                            coverage
 #   4. frontend_test_build - Frontend: lint and Vitest with coverage, then
 #                            production build
+#   5. docs_validation     - Markdown lint, link and anchor check, code sample syntax,
+#                            docs/repository consistency
+#   6. infrastructure_validation
+#                          - Docker Compose, Nginx config, PostgreSQL init script,
+#                            Dockerfile lint and frontend image build, secret scan
+#   7. scripts_validation  - ShellCheck, syntax, shebang and executable bit, and
+#                            consistency with the Compose and env files
 #
 # Every job waits for code_quality, so formatting problems fail the run before
 # any heavy dependencies are installed.
@@ -351,3 +358,452 @@ jobs:
           name: frontend-dist
           path: frontend/dist/
           retention-days: 7
+
+  # ============================================================
+  # Job 5 -- Docs Validation
+  # ============================================================
+  docs_validation:
+    name: Docs Validation
+    runs-on: ubuntu-latest
+    needs: code_quality
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Lint Markdown (docs/ and root README)
+        run: |
+          set -euo pipefail
+          # Line length is left to Prettier (code_quality job); inline HTML is
+          # allowed for the badges/images in the README. MD034 (bare URLs),
+          # MD037 (spaces in emphasis, tripped by the math in ai-models.md) and
+          # MD040 (language on fenced blocks, tripped by the ASCII directory
+          # trees and diagrams) are off because the existing docs rely on them.
+          cat > "$RUNNER_TEMP/markdownlint.jsonc" <<'EOF'
+          {
+            "config": {
+              "default": true,
+              "MD013": false,
+              "MD033": {
+                "allowed_elements": ["img", "div", "p", "br", "a", "picture", "source", "details", "summary"]
+              },
+              "MD034": false,
+              "MD037": false,
+              "MD040": false
+            }
+          }
+          EOF
+          npx --yes markdownlint-cli2@0.24.0 --config "$RUNNER_TEMP/markdownlint.jsonc" "docs/**/*.md" README.md
+
+      - name: Install lychee (link checker)
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL "https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz" \
+            | tar xz -C "$HOME/.local/bin" --strip-components=1 --wildcards '*/lychee'
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Check internal links and anchors
+        run: |
+          lychee --offline --no-progress --include-fragments \
+            'docs/**/*.md' README.md .github/readme/README.md
+
+      - name: Validate code samples (python, bash, json)
+        run: |
+          python - <<'PY'
+          import ast, json, pathlib, re, subprocess, sys
+
+          FENCE = re.compile(r"^```([A-Za-z0-9_+-]*)[^\n]*\n(.*?)^```", re.S | re.M)
+          # The API reference abbreviates payloads as { ... } or [ ... ].
+          ELLIPSIS = re.compile(r"([\[{])\s*\.\.\.\s*([\]}])")
+          failures = checked = 0
+          files = sorted(pathlib.Path("docs").rglob("*.md")) + [pathlib.Path("README.md")]
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+              for m in FENCE.finditer(text):
+                  lang, body = m.group(1).lower(), m.group(2)
+                  line = text.count("\n", 0, m.start()) + 1
+                  err = None
+                  if lang in ("python", "py"):
+                      try:
+                          ast.parse(body)
+                      except SyntaxError as e:
+                          err = f"python: {e.msg} (block line {e.lineno})"
+                  elif lang in ("bash", "sh", "shell"):
+                      r = subprocess.run(["bash", "-n"], input=body, text=True, capture_output=True)
+                      if r.returncode:
+                          err = "bash: " + r.stderr.strip().splitlines()[-1]
+                  elif lang == "json":
+                      try:
+                          json.loads(ELLIPSIS.sub(r"\1\2", body))
+                      except ValueError as e:
+                          err = f"json: {e}"
+                  else:
+                      continue
+                  checked += 1
+                  if err:
+                      failures += 1
+                      print(f"::error file={path},line={line}::{err}")
+          print(f"Checked {checked} code blocks, {failures} invalid")
+          sys.exit(1 if failures else 0)
+          PY
+
+      - name: Check docs are consistent with the repository
+        run: |
+          set -euo pipefail
+          status=0
+
+          # Every page in docs/ must be reachable from the documentation table
+          # in the root README (there is no separate docs index).
+          for f in docs/*.md; do
+            grep -q "($f)" README.md || { echo "::error file=$f::not linked from README.md"; status=1; }
+          done
+
+          # Every script in scripts/ must be mentioned in the README or docs,
+          # and every *.sh they mention must exist.
+          scripts=$(for f in scripts/*.sh; do basename "$f"; done | sort)
+          mentioned=$(grep -ohE '\b[A-Za-z0-9_]+\.sh\b' README.md docs/*.md | sort -u)
+          for s in $(comm -23 <(echo "$scripts") <(echo "$mentioned")); do
+            echo "::error file=README.md::scripts/$s exists but is not mentioned in README.md or docs/"; status=1
+          done
+          for s in $(comm -13 <(echo "$scripts") <(echo "$mentioned")); do
+            echo "::error file=README.md::the docs mention $s but scripts/$s does not exist"; status=1
+          done
+
+          # Repository paths written as `code spans` (scripts/, infrastructure/,
+          # docs/, code/, frontend/) must exist. .env files are git-ignored.
+          while IFS= read -r p; do
+            [ -e "$p" ] || { echo "::error::docs reference \`$p\` but it does not exist"; status=1; }
+          done < <(grep -ohE '`(scripts|infrastructure|docs|code|frontend)/[A-Za-z0-9_./-]+`' README.md docs/*.md | tr -d '`' | grep -v '\.env$' | sort -u)
+
+          # Large binaries bloat clones; warn only.
+          while IFS= read -r big; do
+            echo "::warning file=$big::file is larger than 5 MB; consider compressing it (e.g. PNG/WebP instead of BMP)"
+          done < <(find docs -type f -size +5M)
+
+          exit "$status"
+
+      - name: Check external links (advisory)
+        continue-on-error: true
+        run: |
+          lychee --no-progress --max-retries 2 --timeout 20 --accept '200..=299,429' \
+            'docs/**/*.md' README.md
+
+  # ============================================================
+  # Job 6 -- Infrastructure Validation
+  # (Docker Compose, Nginx, PostgreSQL, Dockerfiles)
+  # ============================================================
+  infrastructure_validation:
+    name: Infrastructure Validation
+    runs-on: ubuntu-latest
+    needs: code_quality
+    timeout-minutes: 30
+
+    env:
+      HADOLINT_VERSION: "2.15.1"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # yamllint also brings in PyYAML, which the consistency check below uses.
+      - name: Install CI tooling
+        run: python -m pip install yamllint==1.38.0
+
+      # ---- Docker Compose -----------------------------------
+      - name: Validate Docker Compose file
+        run: |
+          set -euo pipefail
+          # Every service loads code/backend/.env, which is git-ignored; use the
+          # example values.
+          cp code/backend/.env.example code/backend/.env
+          docker compose config --quiet
+
+      - name: Check Compose file is consistent with the repository
+        run: |
+          python - <<'PY'
+          import pathlib, sys, yaml
+
+          problems = []
+          compose = yaml.safe_load(pathlib.Path("docker-compose.yml").read_text())
+          services = compose["services"]
+          declared_volumes = set(compose.get("volumes") or {})
+
+          for name, svc in services.items():
+              build = svc.get("build")
+              if build:
+                  context = pathlib.Path(build["context"])
+                  dockerfile = context / build.get("dockerfile", "Dockerfile")
+                  if not context.is_dir():
+                      problems.append(f"{name}: build context {context} does not exist")
+                  if not dockerfile.is_file():
+                      problems.append(f"{name}: Dockerfile {dockerfile} does not exist")
+              for env_file in svc.get("env_file") or []:
+                  if not pathlib.Path(env_file).is_file():
+                      problems.append(f"{name}: env_file {env_file} does not exist")
+              for volume in svc.get("volumes") or []:
+                  source = volume.split(":")[0]
+                  if source.startswith("."):
+                      if not pathlib.Path(source).exists():
+                          problems.append(f"{name}: bind mount source {source} does not exist")
+                  elif source not in declared_volumes:
+                      problems.append(f"{name}: volume {source} is not declared under volumes:")
+              for dep in (svc.get("depends_on") or {}):
+                  if dep not in services:
+                      problems.append(f"{name}: depends_on unknown service {dep}")
+
+          # code/backend/.env.example says the POSTGRES_* values must be the same
+          # database, role and password as DB_*; init.sql must grant on that database.
+          env = dict(
+              line.split("=", 1)
+              for line in pathlib.Path("code/backend/.env.example").read_text().splitlines()
+              if "=" in line and not line.lstrip().startswith("#")
+          )
+          for db_key, pg_key in (("DB_NAME", "POSTGRES_DB"), ("DB_USER", "POSTGRES_USER"), ("DB_PASSWORD", "POSTGRES_PASSWORD")):
+              if env.get(db_key) != env.get(pg_key):
+                  problems.append(f".env.example: {db_key} and {pg_key} must match")
+          init_sql = pathlib.Path("infrastructure/postgres/init.sql").read_text()
+          if f"DATABASE {env['DB_NAME']} " not in init_sql:
+              problems.append(f"init.sql does not grant on database {env['DB_NAME']}")
+          if f"rolname = '{env['DB_USER']}'" not in init_sql:
+              problems.append(f"init.sql does not manage role {env['DB_USER']}")
+
+          for p in problems:
+              print(f"::error::{p}")
+          print("Compose file OK" if not problems else f"{len(problems)} problem(s)")
+          sys.exit(1 if problems else 0)
+          PY
+
+      - name: yamllint (Compose)
+        run: |
+          yamllint -d "{extends: relaxed, rules: {line-length: disable, truthy: disable}}" \
+            docker-compose.yml
+
+      # ---- Nginx --------------------------------------------
+      # Uses the same image tag as docker-compose.yml. The upstream host
+      # "backend" only resolves inside the Compose network, so point it at
+      # localhost for the syntax test.
+      - name: Test Nginx configuration
+        run: |
+          set -euo pipefail
+          image=$(docker compose config --images | grep '^nginx:')
+          [ -n "$image" ] || { echo "::error::no nginx image found in docker-compose.yml"; exit 1; }
+          docker run --rm --add-host backend:127.0.0.1 \
+            -v "$PWD/infrastructure/nginx/nginx.conf:/etc/nginx/nginx.conf:ro" \
+            "$image" nginx -t
+
+      # ---- PostgreSQL ---------------------------------------
+      # Mounts init.sql exactly as docker-compose.yml does, so the image's
+      # entrypoint runs it on first start and aborts if it fails. It is then run
+      # a second time by hand, because it must be safe to re-apply.
+      - name: Run PostgreSQL init script
+        run: |
+          set -euo pipefail
+          image=$(docker compose config --images | grep '^postgres:')
+          [ -n "$image" ] || { echo "::error::no postgres image found in docker-compose.yml"; exit 1; }
+          docker run -d --name qw-postgres \
+            --env-file code/backend/.env \
+            -v "$PWD/infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro" \
+            "$image"
+
+          echo "=== Waiting for PostgreSQL ==="
+          ready=false
+          for i in $(seq 1 45); do
+            if [ "$(docker inspect -f '{{.State.Running}}' qw-postgres)" != true ]; then
+              echo "::error file=infrastructure/postgres/init.sql::container exited during initialisation"
+              docker logs qw-postgres
+              exit 1
+            fi
+            # The image starts a temporary server for init scripts and then
+            # restarts; the real one is up when this message appears twice.
+            if [ "$(docker logs qw-postgres 2>&1 | grep -c 'ready to accept connections')" -ge 2 ]; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" != true ]; then
+            echo "::error::PostgreSQL did not become ready in time"
+            docker logs qw-postgres
+            exit 1
+          fi
+
+          echo "=== Re-applying init.sql (must be idempotent) ==="
+          docker exec -i qw-postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -v ON_ERROR_STOP=1 -q' \
+            < infrastructure/postgres/init.sql
+
+          echo "=== Checking extensions ==="
+          installed=$(docker exec qw-postgres sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -Atc "select extname from pg_extension"')
+          for ext in uuid-ossp pg_trgm btree_gin; do
+            grep -qx "$ext" <<< "$installed" || { echo "::error file=infrastructure/postgres/init.sql::extension $ext was not installed"; exit 1; }
+          done
+
+      - name: Stop PostgreSQL container
+        if: always()
+        run: docker rm -f qw-postgres || true
+
+      # ---- Docker -------------------------------------------
+      - name: Lint Dockerfiles (fails on errors, prints warnings)
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.local/bin"
+          curl -fsSL -o "$HOME/.local/bin/hadolint" \
+            "https://github.com/hadolint/hadolint/releases/download/v${HADOLINT_VERSION}/hadolint-linux-x86_64"
+          chmod +x "$HOME/.local/bin/hadolint"
+          hadolint --failure-threshold error \
+            code/backend/Dockerfile frontend/Dockerfile
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # The backend image is built in the Backend job; build the standalone
+      # frontend one here. Compose does not use it (it builds the frontend into a
+      # shared volume), so nothing else would catch it breaking.
+      - name: Build standalone frontend Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: frontend
+          file: frontend/Dockerfile
+          push: false
+          tags: quantumwealth-frontend:ci-${{ github.sha }}
+          cache-from: type=gha,scope=frontend-image
+          cache-to: type=gha,mode=max,scope=frontend-image
+
+      # ---- Secrets ------------------------------------------
+      # qwpassword is the documented local-development default (.env.example,
+      # init.sql, setup.sh) and is allowed; anything else must come from the
+      # environment.
+      - name: Scan infrastructure for hard-coded secrets
+        run: |
+          set -uo pipefail
+          found=0
+          for pattern in \
+            'password\s*=\s*"[^"]{8,}"' \
+            'secret\s*=\s*"[^"]{8,}"' \
+            'api[_-]key\s*=\s*"[^"]{8,}"' \
+            "password\s+'[^']{8,}'" \
+            '(PASSWORD|SECRET|API_KEY|SECRET_KEY):\s+[^$[:space:]#]{8,}' \
+            'BEGIN (RSA|EC|OPENSSH) PRIVATE KEY'; do
+            hits=$(grep -rEIin "$pattern" infrastructure docker-compose.yml \
+              | grep -v '\.example' \
+              | grep -viE 'placeholder|change_?me|qwpassword|:[0-9]+:\s*(#|--)' || true)
+            if [ -n "$hits" ]; then
+              echo "::error::possible hard-coded secret matching /$pattern/"
+              echo "$hits"
+              found=1
+            fi
+          done
+          exit "$found"
+
+  # ============================================================
+  # Job 7 -- Scripts Validation
+  # ============================================================
+  scripts_validation:
+    name: Scripts Validation
+    runs-on: ubuntu-latest
+    needs: code_quality
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install ShellCheck
+        run: python -m pip install shellcheck-py==0.11.0.1
+
+      - name: ShellCheck all tracked shell scripts (fails on warnings and errors)
+        run: git ls-files -z '*.sh' | xargs -0 shellcheck --severity=warning
+
+      - name: ShellCheck stricter style findings (advisory)
+        continue-on-error: true
+        run: git ls-files -z '*.sh' | xargs -0 shellcheck --severity=info
+
+      - name: Check syntax and shebang of all tracked shell scripts
+        run: |
+          set -euo pipefail
+          while IFS= read -r -d '' f; do
+            bash -n "$f"
+            head -n 1 "$f" | grep -qE '^#!.*(bash|sh)' || { echo "::error file=$f::missing shebang"; exit 1; }
+          done < <(git ls-files -z '*.sh')
+
+      - name: Check shell scripts are executable in git
+        run: |
+          missing=$(git ls-files -s '*.sh' | awk '$1 != "100755" {print $4}')
+          if [ -n "$missing" ]; then
+            while IFS= read -r f; do
+              echo "::error file=$f::not executable in git. Fix: git update-index --chmod=+x $f"
+            done <<< "$missing"
+            exit 1
+          fi
+
+      # Neither script has a --help handler (setup.sh creates a virtualenv and
+      # installs packages, backup_db.sh needs a running database), so there is no
+      # safe smoke test. Instead, check what they depend on actually exists.
+      - name: Check scripts agree with the rest of the repository
+        run: |
+          python - <<'PY'
+          import pathlib, re, sys, yaml
+
+          problems = []
+          setup = pathlib.Path("scripts/setup.sh").read_text()
+          backup = pathlib.Path("scripts/backup_db.sh").read_text()
+
+          # Files the scripts read or run
+          for path in (
+              "code/backend/manage.py",
+              "code/backend/requirements.txt",
+              "code/backend/.env.example",
+              "code/ai_models/requirements.txt",
+              "docker-compose.yml",
+          ):
+              if not pathlib.Path(path).is_file():
+                  problems.append(f"scripts rely on {path}, which does not exist")
+
+          # setup.sh runs migrations with a named settings module
+          module = re.search(r"DJANGO_SETTINGS_MODULE=(\S+)", setup).group(1)
+          settings = pathlib.Path("code/backend", *module.split(".")).with_suffix(".py")
+          if not settings.is_file():
+              problems.append(f"scripts/setup.sh uses settings module {module}, but {settings} does not exist")
+
+          # backup_db.sh runs pg_dump in the Compose service it names, with the
+          # same role and database that .env.example defines
+          service = re.search(r"compose exec -T (\w+)", backup).group(1)
+          services = yaml.safe_load(pathlib.Path("docker-compose.yml").read_text())["services"]
+          if service not in services:
+              problems.append(f"scripts/backup_db.sh execs in service {service}, which docker-compose.yml does not define")
+          env = dict(
+              line.split("=", 1)
+              for line in pathlib.Path("code/backend/.env.example").read_text().splitlines()
+              if "=" in line and not line.lstrip().startswith("#")
+          )
+          for key in ("DB_USER", "DB_NAME"):
+              default = re.search(r"\$\{" + key + r":-([^}]+)\}", backup).group(1)
+              if default != env[key]:
+                  problems.append(f"scripts/backup_db.sh defaults {key} to {default}, but .env.example has {env[key]}")
+
+          for p in problems:
+              print(f"::error::{p}")
+          print("Scripts OK" if not problems else f"{len(problems)} problem(s)")
+          sys.exit(1 if problems else 0)
+          PY
