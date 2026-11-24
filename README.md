@@ -1,10 +1,11 @@
 # QuantumWealth
 
-![CI/CD Status](https://img.shields.io/github/actions/workflow/status/quantsingularity/QuantumWealth/cicd.yml?branch=main&label=CI%2FCD&logo=github)
+[![CI/CD Status](https://img.shields.io/github/actions/workflow/status/quantsingularity/QuantumWealth/cicd.yml?branch=main&label=CI%2FCD&logo=github)](https://github.com/quantsingularity/QuantumWealth/actions/workflows/cicd.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Node 20](https://img.shields.io/badge/Node-20-339933?logo=nodedotjs&logoColor=white)
 
-## AI-Powered Wealth Management and Robo-Advisory Platform
-
-QuantumWealth is a robo-advisory platform: a Django backend for accounts, advisor, market, portfolio, risk, and tax, paired with a React web dashboard and 9 genuinely implemented AI modules (portfolio optimization, risk, robo-advice, market prediction, tax optimization, sentiment, factor models, backtesting, and anomaly detection), each pulling real market data via yfinance and wired directly into the backend.
+QuantumWealth is an AI-powered wealth management and robo-advisory platform. A Django REST backend covers accounts, advisor, market, portfolio, risk, and tax; a React dashboard sits in front of it; and nine pure-Python AI modules (portfolio optimization, risk, robo-advice, market prediction, tax optimization, sentiment, factor models, backtesting, and anomaly detection) are imported directly by the backend with no network boundary.
 
 <div align="center">
   <img src="docs/images/homepage.bmp" alt="QuantumWealth HomePage" width="100%">
@@ -13,10 +14,10 @@ QuantumWealth is a robo-advisory platform: a Django backend for accounts, adviso
 ## Table of Contents
 
 - [Overview](#overview)
+- [Architecture](#architecture)
 - [Project Structure](#project-structure)
 - [Feature Status](#feature-status)
 - [Technology Stack](#technology-stack)
-- [Architecture](#architecture)
 - [Installation and Setup](#installation-and-setup)
 - [Running the Stack](#running-the-stack)
 - [API Surface](#api-surface)
@@ -28,96 +29,91 @@ QuantumWealth is a robo-advisory platform: a Django backend for accounts, adviso
 
 ## Overview
 
-QuantumWealth demonstrates a robo-advisory workflow across a real, runnable codebase. All 9 AI modules are genuinely implemented, not aspirational: real cvxpy-based Black-Litterman and Hierarchical Risk Parity optimization, real Monte Carlo GBM simulation for VaR, and real VADER sentiment scoring with an honest fallback if the library isn't installed, and six of them are genuinely imported and called by the Django backend. CI runs the backend's 192 tests, the AI modules' separate 154-test suite, and the frontend's 126 Vitest tests.
-
-## Project Structure
-
-```
-QuantumWealth/
-├── code/
-│   ├── backend/                    # Django application
-│   │   ├── quantumwealth/          # Project config: settings, URLs
-│   │   ├── apps/                   # accounts, advisor, market, portfolio, risk, tax
-│   │   └── tests/                  # Backend test suite (run in CI)
-│   └── ai_models/                  # 9 AI modules, 6 of them genuinely imported
-│       ├── portfolio_optimizer/    # Mean-variance, Black-Litterman, risk parity, HRP
-│       ├── risk_engine/            # Historical/parametric VaR, CVaR, Monte Carlo GBM
-│       ├── robo_advisor/           # Goal planning (FV/PMT), ERC rebalancing
-│       ├── market_predictor/       # GBM forecasting, regime detection, RSI/SMA
-│       ├── tax_optimizer/          # Tax-loss harvesting, wash-sale calendar
-│       ├── sentiment_analyzer/     # VADER news sentiment, with a fallback
-│       │                           # if the library isn't installed
-│       ├── factor_models/          # Fama-French 5-factor OLS, BHB attribution
-│       ├── backtester/             # Event-driven simulation with transaction
-│       │                           # costs and benchmark comparison
-│       ├── anomaly_detector/       # Isolation Forest, z-score outliers
-│       └── tests/                  # AI modules' own test suite (run in CI)
-├── frontend/                       # React (Vite) web dashboard
-├── infrastructure/                 # Nginx config, PostgreSQL init
-├── scripts/                        # setup.sh, backup_db.sh
-├── docs/                           # Documentation (this directory)
-├── docker-compose.yml              # Full stack: db, redis,
-│                                   # celery worker/beat, backend,
-│                                   # frontend build, nginx
-└── README.md
-```
-
-## Feature Status
-
-### Application tier (wired and tested)
-
-| Component                  | Details                                                                                                                                                                |
-| :------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **API**                    | Django REST backend covering accounts, advisor, market, portfolio, risk, and tax apps, with Swagger UI and ReDoc served alongside the API.                             |
-| **Portfolio optimization** | Real cvxpy-based mean-variance, Black-Litterman, risk parity, and Hierarchical Risk Parity optimization, pulling market data via yfinance.                             |
-| **Risk engine**            | Historical VaR, parametric VaR, CVaR, a Monte Carlo GBM simulation, and 5 stress scenarios.                                                                            |
-| **Robo advisor**           | Future-value and payment-based goal planning, Equal Risk Contribution rebalancing, and concentration detection.                                                        |
-| **Market predictor**       | GBM price forecasting, rolling regime detection, and RSI plus SMA indicators.                                                                                          |
-| **Tax optimizer**          | Greedy tax-loss harvest scheduling, an after-tax return model, and a wash-sale calendar.                                                                               |
-| **Sentiment analyzer**     | Real VADER-based news sentiment scoring, combined with momentum, volume, and RSI into a composite signal, with a fallback to a neutral score if VADER isn't installed. |
-| **Factor models**          | Fama-French 5-factor OLS regression, Brinson-Hood-Beebower performance attribution, and sector decomposition.                                                          |
-| **Backtester**             | Event-driven simulation with transaction costs and benchmark comparison.                                                                                               |
-| **Anomaly detector**       | Isolation Forest, z-score outlier detection, and wash-sale clustering.                                                                                                 |
-| **Web dashboard**          | React app (Vite, plain JavaScript) with Tailwind CSS and Recharts, backed by Celery worker and beat containers for background and scheduled tasks.                     |
-
-## Technology Stack
-
-| Area                 | Technology                                                                                                          |
-| :------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| Backend              | Django, Django REST Framework                                                                                       |
-| Data layer           | PostgreSQL, Redis (cache and Celery broker)                                                                         |
-| Background tasks     | Celery (worker and beat, both containerized)                                                                        |
-| Quant / optimization | cvxpy (Black-Litterman, HRP, mean-variance, risk parity), SciPy, NumPy, pandas                                      |
-| Market data          | yfinance                                                                                                            |
-| Sentiment            | VADER (vaderSentiment), with a neutral-score fallback if not installed                                              |
-| Anomaly detection    | scikit-learn (Isolation Forest)                                                                                     |
-| Web frontend         | React 18, Vite, Tailwind CSS, Recharts                                                                              |
-| Infrastructure       | Docker, Docker Compose, Nginx                                                                                       |
-| CI/CD                | GitHub Actions                                                                                                      |
-| Testing              | pytest (backend, 192 tests; AI modules, 154 tests); Vitest and Testing Library (frontend, 126 tests); all run in CI |
+| Topic              | Summary                                                                                                                                                     |
+| :----------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Deployment model   | One Django backend (Gunicorn), a Celery worker and beat scheduler, PostgreSQL, Redis, and Nginx, all defined in a single Compose file.                      |
+| AI modules         | Nine modules in `code/ai_models`, imported in-process by Django service classes. Market data comes from yfinance.                                           |
+| Backend wiring     | Four modules are called by the backend: portfolio optimizer, risk engine, robo advisor, and market predictor.                                               |
+| Standalone modules | Tax optimizer, sentiment analyzer, factor models, backtester, and anomaly detector are implemented and tested, but are not yet imported by any backend app. |
+| Tests              | 192 backend tests, 154 AI module tests, and 126 frontend tests. All three suites run in CI.                                                                 |
 
 ## Architecture
 
+```mermaid
+flowchart TD
+    browser["Browser"] --> nginx["Nginx (port 80)"]
+    nginx -->|"static bundle"| spa["React dashboard (frontend_dist volume)"]
+    nginx -->|"/api/ and /admin/"| django["Django backend (Gunicorn, port 8000)"]
+    django --> db[("PostgreSQL")]
+    django --> redis[("Redis")]
+    django -->|"in-process imports"| ai["ai_models (4 of 9 modules wired)"]
+    ai -->|"yfinance"| market["Market data"]
+    worker["Celery worker"] --> redis
+    beat["Celery beat"] --> db
+    worker --> db
 ```
-Client
-  └── frontend (React, Vite)          ── HTTP/JSON ──┐
-                                                       ▼
-Backend (Django)
-  ├── Apps    accounts, advisor, market, portfolio, risk, tax
-  ├── Background  Celery worker and beat (scheduled tasks)
-  └── Data layer    PostgreSQL, Redis
 
-AI modules (code/ai_models, imported directly by the backend apps)
-  portfolio_optimizer · risk_engine · robo_advisor · market_predictor
-  tax_optimizer · sentiment_analyzer · factor_models · backtester
-  anomaly_detector
-```
+| Compose service  | Image or build            | Host port | Role                                                                 |
+| :--------------- | :------------------------ | :-------- | :------------------------------------------------------------------- |
+| `nginx`          | `nginx:1.25-alpine`       | 80        | Serves the React bundle, static and media files, and proxies the API |
+| `backend`        | `code/backend/Dockerfile` | None      | Runs migrations and `collectstatic`, then Gunicorn with 4 workers    |
+| `celery_worker`  | `code/backend/Dockerfile` | None      | Background tasks (concurrency 4)                                     |
+| `celery_beat`    | `code/backend/Dockerfile` | None      | Scheduled tasks via the django-celery-beat database scheduler        |
+| `db`             | `postgres:16-alpine`      | 5433      | PostgreSQL, initialized by `infrastructure/postgres/init.sql`        |
+| `redis`          | `redis:7-alpine`          | 6379      | Cache and Celery broker (256 MB, LRU eviction)                       |
+| `frontend-build` | `node:20-alpine`          | None      | One-shot job that builds the dashboard into a shared volume          |
 
 See [docs/architecture.md](docs/architecture.md) for detail.
 
+## Project Structure
+
+| Path                 | Purpose                                                                                        |
+| :------------------- | :--------------------------------------------------------------------------------------------- |
+| `code/backend`       | Django backend: config, the six apps, tests, Dockerfile, and a Makefile of developer shortcuts |
+| `code/ai_models`     | The nine AI modules and their tests (see [Feature Status](#feature-status))                    |
+| `frontend`           | React (Vite) web dashboard, with its own Dockerfile and tests                                  |
+| `infrastructure`     | Nginx configuration and the PostgreSQL init script                                             |
+| `scripts`            | `setup.sh` (local setup) and `backup_db.sh` (database backup)                                  |
+| `docs`               | Project documentation                                                                          |
+| `docker-compose.yml` | Full stack definition                                                                          |
+| `.github`            | CI/CD workflow and its documentation                                                           |
+
+## Feature Status
+
+| Component                  | Backend wiring | Details                                                                                                                                                         |
+| :------------------------- | :------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **API**                    | Not applicable | Django REST backend with accounts, advisor, market, portfolio, risk, and tax apps. Swagger UI and ReDoc are served alongside the API.                           |
+| **Portfolio optimization** | Wired          | cvxpy-based mean-variance, Black-Litterman, risk parity, and Hierarchical Risk Parity, with market data from yfinance.                                          |
+| **Risk engine**            | Wired          | Historical VaR, parametric VaR, CVaR, Monte Carlo GBM simulation, and 5 stress scenarios (2008 crisis, COVID crash, dot-com bust, rate shock, inflation spike). |
+| **Robo advisor**           | Wired          | Future-value and payment-based goal planning, Equal Risk Contribution rebalancing, and concentration detection.                                                 |
+| **Market predictor**       | Wired          | GBM price forecasting (a stand-in for a trained LSTM, which is not included), rolling regime detection, and RSI plus SMA indicators.                            |
+| **Tax optimizer**          | Standalone     | Greedy tax-loss harvest scheduling, an after-tax return model, and a wash-sale calendar. The tax app has its own services and does not import this module.      |
+| **Sentiment analyzer**     | Standalone     | VADER-based news sentiment combined with momentum, volume, and RSI into a composite signal. Falls back to a neutral score if VADER is not installed.            |
+| **Factor models**          | Standalone     | Fama-French 5-factor OLS regression, Brinson-Hood-Beebower attribution, and sector decomposition.                                                               |
+| **Backtester**             | Standalone     | Event-driven simulation with transaction costs and benchmark comparison.                                                                                        |
+| **Anomaly detector**       | Standalone     | Isolation Forest, z-score outlier detection, and wash-sale clustering.                                                                                          |
+| **Background tasks**       | Not applicable | Celery worker and beat containers for background and scheduled work, with Redis as the broker.                                                                  |
+| **Web dashboard**          | Not applicable | React 18 app (Vite, plain JavaScript) with Tailwind CSS, React Router, and Recharts.                                                                            |
+
+## Technology Stack
+
+| Area                 | Technology                                                                                                             |
+| :------------------- | :--------------------------------------------------------------------------------------------------------------------- |
+| Backend              | Python 3.12 (backend image; CI tests on 3.11), Django 5.x, Django REST Framework, SimpleJWT, drf-spectacular, Gunicorn |
+| Data layer           | PostgreSQL 16, Redis 7 (cache and Celery broker)                                                                       |
+| Background tasks     | Celery (worker and beat, both containerized), django-celery-beat                                                       |
+| Quant / optimization | cvxpy (Black-Litterman, HRP, mean-variance, risk parity), SciPy, NumPy, pandas                                         |
+| Market data          | yfinance                                                                                                               |
+| Sentiment            | VADER (vaderSentiment), with a neutral-score fallback if not installed                                                 |
+| Anomaly detection    | scikit-learn (Isolation Forest)                                                                                        |
+| Web frontend         | React 18, Vite 5, Tailwind CSS 3, React Router 6, Recharts                                                             |
+| Infrastructure       | Docker, Docker Compose, Nginx                                                                                          |
+| CI/CD                | GitHub Actions                                                                                                         |
+| Testing              | pytest (backend and AI modules), Vitest and Testing Library (frontend)                                                 |
+
 ## Installation and Setup
 
-Prerequisites: Python 3.11+, Node.js 18+, and Docker.
+Prerequisites: Python 3.12+ (the backend image uses 3.12 and `scripts/setup.sh` requires it; CI also tests on 3.11), Node.js 20+, and Docker. The local backend also needs a PostgreSQL instance with the role and database named in `.env`.
 
 Docker:
 
@@ -126,22 +122,34 @@ git clone https://github.com/quantsingularity/QuantumWealth.git
 cd QuantumWealth
 cp code/backend/.env.example code/backend/.env
 # edit .env: set SECRET_KEY and DB_PASSWORD
+# POSTGRES_PASSWORD must have the same value as DB_PASSWORD
 
 docker compose up --build -d
 docker compose exec backend python manage.py seed_demo_data
 ```
 
-Local:
+Local backend:
 
 ```bash
 cd code/backend
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
+pip install -r ../ai_models/requirements.txt
 cp .env.example .env
 python manage.py migrate
 python manage.py seed_demo_data
 python manage.py runserver
 ```
+
+Local frontend:
+
+```bash
+cd frontend
+npm ci --legacy-peer-deps
+npm run dev
+```
+
+`scripts/setup.sh` automates the local backend setup (virtualenv, dependencies, `.env`, and migrations). See [docs/deployment.md](docs/deployment.md) for local, Docker, and production instructions.
 
 ## Running the Stack
 
@@ -151,69 +159,56 @@ docker compose up --build -d
 
 | Service      | URL                           |
 | :----------- | :---------------------------- |
+| Dashboard    | `http://localhost/`           |
 | Swagger UI   | `http://localhost/api/docs/`  |
 | ReDoc        | `http://localhost/api/redoc/` |
 | Django Admin | `http://localhost/admin/`     |
 
-Demo login: `demo@quantumwealth.ai` / `Demo1234!`
+Demo login (local development only): `demo@quantumwealth.ai` / `Demo1234!`
+
+Database backups use `scripts/backup_db.sh`, which runs `pg_dump` inside the running Compose database service.
 
 ## API Surface
 
-Full endpoint reference with request and response schemas is in [docs/api-reference.md](docs/api-reference.md), and interactively at `/api/docs/` (Swagger) or `/api/redoc/` once the API is running.
+All application endpoints live under `/api/v1/`. Full request and response schemas are in [docs/api-reference.md](docs/api-reference.md), and interactively at `/api/docs/` (Swagger) or `/api/redoc/` once the API is running.
+
+| Area             | Base path            | Endpoints                                                                                                                                                                                            |
+| :--------------- | :------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Accounts         | `/api/v1/auth/`      | `register/`, `login/`, `logout/`, `token/refresh/`, `me/`, `change-password/`, `password-reset/` (and `confirm/`), `verify-email/{token}/`, `risk-questionnaire/`, `notifications/`, `price-alerts/` |
+| Portfolio        | `/api/v1/portfolio/` | Portfolio CRUD, plus `{id}/holdings/`, `{id}/transactions/`, `{id}/optimize/`, `{id}/performance/`, `{id}/history/`, `{id}/snapshot/`, and `goals/` with `goals/{id}/plan/`                          |
+| Market           | `/api/v1/market/`    | `quote/{ticker}/`, `quotes/bulk/`, `history/{ticker}/`, `predict/{ticker}/`, `search/`, `sectors/`, `watchlists/`                                                                                    |
+| Risk             | `/api/v1/risk/`      | `report/{portfolio_id}/`, `var/{portfolio_id}/`, `stress-test/{portfolio_id}/`, `monte-carlo/{portfolio_id}/`, `correlation/{portfolio_id}/`                                                         |
+| Advisor          | `/api/v1/advisor/`   | `plan/`, `rebalance/{portfolio_id}/`, `recommendations/{portfolio_id}/`, `drift/{portfolio_id}/`, `suggested-allocation/`                                                                            |
+| Tax              | `/api/v1/tax/`       | `harvest/{portfolio_id}/`, `gain-loss/{portfolio_id}/`, `asset-location/{portfolio_id}/`, `wash-sale-check/{portfolio_id}/`                                                                          |
+| Schema and admin | Site root            | `/api/schema/`, `/api/docs/`, `/api/redoc/`, `/admin/`                                                                                                                                               |
 
 ## Testing
 
-```bash
-# Backend (from code/backend)
-pytest
+| Suite     | Directory        | Tests | Run locally                   |
+| :-------- | :--------------- | :---- | :---------------------------- |
+| Backend   | `code/backend`   | 192   | `pytest`                      |
+| AI models | `code/ai_models` | 154   | `PYTHONPATH=.. pytest tests/` |
+| Frontend  | `frontend`       | 126   | `npm test`                    |
 
-# AI modules (from code/ai_models)
-pytest
-
-# Frontend (from frontend)
-npm test
-```
-
-| Suite            | Test count | Run in CI |
-| :--------------- | :--------- | :-------- |
-| `code/backend`   | 192        | Yes       |
-| `code/ai_models` | 154        | Yes       |
-| `frontend`       | 126        | Yes       |
+Run each command from the directory shown. All three suites run in CI, and the AI module tests use synthetic data and patch yfinance, so they need no network. `code/backend/Makefile` also provides `make test` and `make test-coverage`.
 
 See [docs/testing.md](docs/testing.md) for what each suite covers.
 
-### Frontend tests
-
-The dashboard has its own Vitest suite of 126 tests across 7 files, run with `npm test` from the `frontend` directory (`npm run test:coverage` adds a coverage report):
-
-| Test file                                              | Test count |
-| :----------------------------------------------------- | :--------- |
-| `src/api/client.test.js` (REST client, token refresh)  | 28         |
-| `src/components/ui/index.test.jsx` (shared components) | 37         |
-| `src/components/layout/AppLayout.test.jsx` (app shell) | 10         |
-| `src/hooks/useAuth.test.jsx` (session handling)        | 10         |
-| `src/pages/LoginPage.test.jsx` (sign in form)          | 8          |
-| `src/pages/RegisterPage.test.jsx` (registration form)  | 11         |
-| `src/App.test.jsx` (routing and redirects)             | 22         |
-
-Three of those tests are marked as expected failures (`it.fails`) because they record known defects. They fail the run as soon as the defect is fixed, which is the cue to turn them back into normal tests:
-
-| Defect                                                                                                                                               | Where               |
-| :--------------------------------------------------------------------------------------------------------------------------------------------------- | :------------------ |
-| An error response that is not JSON (for example an HTML 502 page from a proxy) rejects with a `SyntaxError` instead of an error carrying the status. | `src/api/client.js` |
-| A server error about the email or name arrives while the user is on step 2 of registration, where nothing renders it, so the submit fails silently.  | `RegisterPage.jsx`  |
-| A failure without error details (a network failure, for example) never reaches the generic "Registration failed." message, so nothing is shown.      | `RegisterPage.jsx`  |
-
 ## CI/CD Pipeline
 
-GitHub Actions (`.github/workflows/cicd.yml`) runs four jobs on push to `main` or `develop`, on pull requests to those branches, and on manual dispatch:
+GitHub Actions (`.github/workflows/cicd.yml`) runs on pushes and pull requests to `main` and `develop`, and on manual dispatch. Every job after the first depends on **Code Quality Checks**, so the other six run in parallel once formatting passes.
 
-| Job                         | Depends on          | What it does                                                                                                                                                                  |
-| :-------------------------- | :------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Code Quality Checks         | -                   | Formatter checks across the repository (Python and Prettier).                                                                                                                 |
-| Backend Test & Build        | Code Quality Checks | Runs `pytest tests/` from `code/backend` with coverage (uploaded as an artifact), then builds the backend Docker image, checks it runs as a non-root user and smoke tests it. |
-| AI Models Test & Validation | Code Quality Checks | Byte-compiles the AI modules, checks that every sub-package imports cleanly, then runs their pytest suite with coverage (uploaded as an artifact).                            |
-| Frontend Test & Build       | Code Quality Checks | Installs dependencies, lints, runs the Vitest suite with coverage (uploaded as an artifact), then produces the production web build and uploads the bundle.                   |
+| #   | Job                         | Depends on          | What it does                                                                                                                                                                                   |
+| :-- | :-------------------------- | :------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Code Quality Checks         | None                | `autoflake` and `black --check` on Python, plus a repository-wide Prettier check (JS, TS, JSON, HTML, CSS, Markdown, Solidity, YAML)                                                           |
+| 2   | Backend Test & Build        | Code Quality Checks | Runs pytest with coverage, builds the backend image, checks it runs as non-root, and smoke tests the container by fetching the OpenAPI schema                                                  |
+| 3   | AI Models Test & Validation | Code Quality Checks | Byte-compiles the AI modules, verifies all 9 packages and their exports import cleanly, and runs their pytest suite with coverage                                                              |
+| 4   | Frontend Test & Build       | Code Quality Checks | `npm ci`, ESLint, the Vitest suite with coverage, then the production Vite build and bundle upload                                                                                             |
+| 5   | Docs Validation             | Code Quality Checks | markdownlint, offline link and anchor checks, syntax checks for Python, Bash, and JSON code blocks, docs and repository consistency checks, and an advisory external link check                |
+| 6   | Infrastructure Validation   | Code Quality Checks | Docker Compose validation and consistency checks, yamllint, `nginx -t`, a PostgreSQL init script run (including a second, idempotent run), hadolint, a frontend image build, and a secret scan |
+| 7   | Scripts Validation          | Code Quality Checks | ShellCheck, syntax, shebang, and executable-bit checks, plus a check that the scripts agree with the Compose file and `.env.example`                                                           |
+
+Coverage reports are kept for 30 days and the frontend bundle for 7 days. The step-by-step breakdown of each job is in [.github/readme/README.md](.github/readme/README.md).
 
 ## Documentation
 
@@ -230,8 +225,8 @@ GitHub Actions (`.github/workflows/cicd.yml`) runs four jobs on push to `main` o
 
 ## Contributing
 
-Open a pull request.
+See [docs/developer-guide.md](docs/developer-guide.md) for the contributing guide, code style, and testing patterns. Open a pull request; every CI job must pass before merging.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
